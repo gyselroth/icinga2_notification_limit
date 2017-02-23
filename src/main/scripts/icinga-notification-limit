@@ -15,8 +15,8 @@ recipient = args.recipient
 
 # Get Configuration
 config = ConfigReader(args.config).getConfig()
-limitsTable = config['table_prefix']+'mailnotification_limits'
-countersTable = config['table_prefix']+'mailnotification_counters'
+limitsTable = config['table_prefix']+'notification_limits'
+countersTable = config['table_prefix']+'notification_counters'
 
 # Connect to DB
 try:
@@ -57,7 +57,7 @@ try:
                 ' WHERE recipient = ?', (newValue, recipient))
             exitCode = 0
         else:
-            print 'reached limit for recipient ' + recipient + '. not sending email'
+            print 'reached limit for recipient ' + recipient + '. not sending notification'
             exitCode = 1
     else:
         print 'recipient ' + recipient + ' not found in database'

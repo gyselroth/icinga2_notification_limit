@@ -28,7 +28,7 @@ CREATE TABLE icinga_notification_counters (
     counter INT UNSIGNED DEFAULT 0,
     updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
-    FOREIGN KEY (limitId) REFERENCES icinga_mailnotification_limits(id)
+    FOREIGN KEY (limitId) REFERENCES icinga_notification_limits(id)
 );
 ```
 ## CONFIGURATION (example)
@@ -42,7 +42,7 @@ _By now, only one limit per recipient is supported!_
 ```
 INSERT INTO icinga_notification_limits (maximum, timerange) VALUES (100, 60);
 
-INSERT INTO icinga_notification_counters (recipient, limitId) VALUES ('jucker@gyselroth.com', 1);
+INSERT INTO icinga_notification_counters (recipient, limitId) VALUES ('jucker@gyselroth.com', 3);
 ```
 
 ## USAGE
