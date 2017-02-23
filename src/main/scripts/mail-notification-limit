@@ -3,21 +3,23 @@ from icinga2_mail_notification_limit.config import ConfigReader
 import sys
 import datetime
 from os import environ
-import MySQLdb as mysql
+import oursql as mysql
 
 recipient = environ.get("USEREMAIL")
 config = ConfigReader('/home/fabian.jucker/06_dev/icinga2_mail_notification_limit/testconfig').getConfig()
 limitsTable = config['table_prefix']+'mailnotification_limits'
 countersTable = config['table_prefix']+'mailnotification_counters'
 
+# TODO: refactor
 try:
-    db = mysql.connect(config['host'], config['user'], config['password'], config['database']);
+    db = mysql.connect(host=config['host'], user=config['user'], \
+        passwd=config['password'], db=config['database']);
 
     cur = db.cursor()
     cur.execute('START TRANSACTION')
     cur.execute('SELECT updated, timerange, counter, maximum FROM ' + countersTable + \
         ' as c JOIN ' + limitsTable + ' as l ON l.id = c.limitId' + \
-        ' WHERE recipient = \'' + recipient + '\' FOR UPDATE')
+        ' WHERE recipient = ? FOR UPDATE', (recipient,))
 
     row = cur.fetchone()
 
@@ -29,15 +31,16 @@ try:
     if (updated + datetime.timedelta(0, timerange)) < datetime.datetime.utcnow():
         cur.execute('UPDATE ' + countersTable + ' SET counter = 1,' + \
             ' updated = CURRENT_TIMESTAMP' + \
-            ' WHERE recipient = \'' + recipient + '\'')
-        // TODO: send mail
+            ' WHERE recipient = ?', (recipient,))
+        # TODO: send mail
     elif counter < maximum:
-        cur.execute('UPDATE ' + countersTable + ' SET counter = ' + \
-            str(counter + 1) + ', updated = CURRENT_TIMESTAMP' + \
-            ' WHERE recipient = \'' + recipient + '\'')
-        // TODO: send mail
+        cur.execute('UPDATE ' + countersTable + ' SET counter = ?' + \
+            ', updated = CURRENT_TIMESTAMP' + \
+            ' WHERE recipient = ?', (counter + 1, recipient))
+        # TODO: send mail
     else:
-        // TODO: log warning / do nothing
+        # TODO: log warning / do nothing
+        print ""
 
     db.commit()
 except mysql.Error as exception:
