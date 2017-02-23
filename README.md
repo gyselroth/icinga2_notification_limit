@@ -26,7 +26,7 @@ CREATE TABLE icinga_notification_counters (
     recipient VARCHAR(50) NOT NULL,
     limitId INT UNSIGNED NOT NULL,
     counter INT UNSIGNED DEFAULT 0,
-    updated TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+    updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (id),
     FOREIGN KEY (limitId) REFERENCES icinga_mailnotification_limits(id)
 );

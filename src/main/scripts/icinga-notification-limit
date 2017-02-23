@@ -45,18 +45,23 @@ try:
         ' WHERE recipient = ? FOR UPDATE', (recipient,))
     row = cur.fetchone()
 
-    # Check if limit reached
-    newValue = LimitChecker.Check(counter=row[2], maximum=row[3], \
-        updated=row[0], timerange=row[1])
-    # Update counter
-    if newValue:
-        cur.execute('UPDATE ' + countersTable + ' SET counter = ?' + \
-            ', updated = CURRENT_TIMESTAMP' + \
-            ' WHERE recipient = ?', (newValue, recipient))
-        exitCode = 0
+    # if any limit configured for recipient
+    if row:
+        # Check if limit reached
+        newValue = LimitChecker.Check(counter=row[2], maximum=row[3], \
+            updated=row[0], timerange=row[1])
+        # Update counter
+        if newValue:
+            cur.execute('UPDATE ' + countersTable + ' SET counter = ?' + \
+                ', updated = CURRENT_TIMESTAMP' + \
+                ' WHERE recipient = ?', (newValue, recipient))
+            exitCode = 0
+        else:
+            print 'reached limit for recipient ' + recipient + '. not sending email'
+            exitCode = 1
     else:
-        print 'reached limit for recipient ' + recipient + '. not sending email'
-        exitCode = 1
+        print 'recipient ' + recipient + ' not found in database'
+        exitCode = 0
 
     db.commit()
 except mysql.Error as exception:
