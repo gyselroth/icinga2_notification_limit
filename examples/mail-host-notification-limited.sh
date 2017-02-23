@@ -2,5 +2,5 @@
 /usr/local/bin/icinga-notification-limit -r $USEREMAIL
 if [ $? -ne 1 ]
 then
-  /etc/icinga2/scripts/mail-service-notification.sh
+  /etc/icinga2/scripts/mail-host-notification.sh
 fi
