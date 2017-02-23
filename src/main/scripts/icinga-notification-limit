@@ -2,20 +2,22 @@
 import sys, argparse
 from os import environ
 import oursql as mysql
-from icinga2_mail_notification_limit.config import ConfigReader
-from icinga2_mail_notification_limit.limit import LimitChecker
+from icinga2_notification_limit.config import ConfigReader
+from icinga2_notification_limit.limit import LimitChecker
 
+# Parse arguments
 parser = argparse.ArgumentParser( description='mail-notification-script for icinga2 with limits configurable per sender')
 parser.add_argument('-r','--recipient', help='Recipient of the notification',required=True)
 parser.add_argument('-c','--config', help='Path to the icinga2 ido-mysql config file (Default: '+ConfigReader.DEFAULT_CONFIG_FILE+')',required=False)
 args = parser.parse_args()
 
 recipient = args.recipient
+
+# Get Configuration
 config = ConfigReader(args.config).getConfig()
 limitsTable = config['table_prefix']+'mailnotification_limits'
 countersTable = config['table_prefix']+'mailnotification_counters'
 
-# TODO: refactor
 # Connect to DB
 try:
     db = mysql.connect(host=config['host'], user=config['user'], \
@@ -35,14 +37,18 @@ except mysql.Error as exception:
 
 # Do the magic
 try:
+    # Use transaction for isolation
     cur.execute('START TRANSACTION')
+    # Get current values
     cur.execute('SELECT updated, timerange, counter, maximum FROM ' + countersTable + \
         ' as c JOIN ' + limitsTable + ' as l ON l.id = c.limitId' + \
         ' WHERE recipient = ? FOR UPDATE', (recipient,))
     row = cur.fetchone()
 
+    # Check if limit reached
     newValue = LimitChecker.Check(counter=row[2], maximum=row[3], \
         updated=row[0], timerange=row[1])
+    # Update counter
     if newValue:
         cur.execute('UPDATE ' + countersTable + ' SET counter = ?' + \
             ', updated = CURRENT_TIMESTAMP' + \
