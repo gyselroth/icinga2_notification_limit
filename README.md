@@ -37,7 +37,7 @@ CREATE TABLE icinga_notification_counters (
 * The `timerange` field of the `*_limits` table represents the time interval in seconds for the limit.
 * The `recipient` field of the `*_counters` table represents an identifier of the targeted recipient (e.g. email address for mail notification).
 * The `limitId` field of the `*_counters` table links the recipient to a limit.
-_by now, only one limit per recipient is supported!_
+_By now, only one limit per recipient is supported!_
 
 ```
 INSERT INTO icinga_notification_limits (maximum, timerange) VALUES (100, 60);
@@ -49,4 +49,4 @@ INSERT INTO icinga_notification_counters (recipient, limitId) VALUES ('jucker@gy
 The program itself does __not__ invoke any invocation.
 Instead, the program returns a value of 0, if the notification should be send and a value of 1 if the notification should not be send.
 Therefore the program can be used in any script.
-Tip: Look at the shellscript examples for usage with the default mail-notification-scripts in examples folder.
+_Tip: Look at the shellscript examples for usage with the default mail-notification-scripts_ in examples folder.
