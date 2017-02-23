@@ -1,0 +1,10 @@
+library "db_ido_mysql"
+
+object IdoMysqlConnection "ido-mysql" {
+  host = "127.0.0.1"
+  user = "icinga2"
+  password = "testpw"
+  database = "icinga2"
+  table_prefix = "icinga_"
+  instance_name = "default"
+}
