@@ -1,54 +1,67 @@
 #!/usr/bin/env python
-from icinga2_mail_notification_limit.config import ConfigReader
-import sys
-import datetime
+import sys, argparse
 from os import environ
 import oursql as mysql
+from icinga2_mail_notification_limit.config import ConfigReader
+from icinga2_mail_notification_limit.limit import LimitChecker
 
-recipient = environ.get("USEREMAIL")
-config = ConfigReader('/home/fabian.jucker/06_dev/icinga2_mail_notification_limit/testconfig').getConfig()
+parser = argparse.ArgumentParser( description='mail-notification-script for icinga2 with limits configurable per sender')
+parser.add_argument('-r','--recipient', help='Recipient of the notification',required=True)
+parser.add_argument('-c','--config', help='Path to the icinga2 ido-mysql config file (Default: '+ConfigReader.DEFAULT_CONFIG_FILE+')',required=False)
+args = parser.parse_args()
+
+recipient = args.recipient
+config = ConfigReader(args.config).getConfig()
 limitsTable = config['table_prefix']+'mailnotification_limits'
 countersTable = config['table_prefix']+'mailnotification_counters'
 
 # TODO: refactor
+# Connect to DB
 try:
     db = mysql.connect(host=config['host'], user=config['user'], \
         passwd=config['password'], db=config['database']);
+except mysql.Error as exception:
+    print "Error %d: %s" % (exception.args[0], exception.args[1])
+    sys.exit(-1)
 
+# Get Cursor
+try:
     cur = db.cursor()
+except mysql.Error as exception:
+    if db:
+        db.close()
+    print "Error %d: %s" % (exception.args[0], exception.args[1])
+    sys.exit(-1)
+
+# Do the magic
+try:
     cur.execute('START TRANSACTION')
     cur.execute('SELECT updated, timerange, counter, maximum FROM ' + countersTable + \
         ' as c JOIN ' + limitsTable + ' as l ON l.id = c.limitId' + \
         ' WHERE recipient = ? FOR UPDATE', (recipient,))
-
     row = cur.fetchone()
 
-    updated = row[0]
-    timerange = row[1]
-    counter = row[2]
-    maximum = row[3]
-
-    if (updated + datetime.timedelta(0, timerange)) < datetime.datetime.utcnow():
-        cur.execute('UPDATE ' + countersTable + ' SET counter = 1,' + \
-            ' updated = CURRENT_TIMESTAMP' + \
-            ' WHERE recipient = ?', (recipient,))
-        # TODO: send mail
-    elif counter < maximum:
+    newValue = LimitChecker.Check(counter=row[2], maximum=row[3], \
+        updated=row[0], timerange=row[1])
+    if newValue:
         cur.execute('UPDATE ' + countersTable + ' SET counter = ?' + \
             ', updated = CURRENT_TIMESTAMP' + \
-            ' WHERE recipient = ?', (counter + 1, recipient))
-        # TODO: send mail
+            ' WHERE recipient = ?', (newValue, recipient))
+        exitCode = 0
     else:
-        # TODO: log warning / do nothing
-        print ""
+        print 'reached limit for recipient ' + recipient + '. not sending email'
+        exitCode = 1
 
     db.commit()
 except mysql.Error as exception:
+    if db:
+        db.rollback()
     print "Error %d: %s" % (exception.args[0], exception.args[1])
-    sys.exit(1)
+    sys.exit(-1)
 finally:
     if cur:
         cur.close()
     if db:
-        db.rollback()
         db.close()
+
+sys.exit(exitCode)

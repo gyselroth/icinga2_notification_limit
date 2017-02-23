@@ -7,9 +7,9 @@ use_plugin("python.distutils")
 
 default_task = "publish"
 
-name = "icinga2_mail_notification_limit"
+name = "icinga2_notification_limit"
 version = "0.0.1"
-description = "mail-notification-script for icinga2 with limits configurable per sender"
+description = "script for icinga2 notifications with limits configurable per sender"
 authors = [Author("Fabian Jucker", "jucker@gyselroth.com")]
 url = "https://github.com/gyselroth"
 

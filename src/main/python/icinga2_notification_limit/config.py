@@ -13,6 +13,7 @@ class ConfigReaderError(Exception):
 
 
 class ConfigReader(object):
+    DEFAULT_CONFIG_FILE = '/etc/icinga2/features-enabled/ido-mysql.conf'
     REGEX = {
         'host': re.compile('^\s*host\s*=\s*("|\')(.*)("|\')'), \
         'user': re.compile('^\s*user\s*=\s*("|\')(.*)("|\')'), \
@@ -21,10 +22,13 @@ class ConfigReader(object):
         'table_prefix': re.compile('^\s*table_prefix\s*=\s*("|\')(.*)("|\')')
     }
 
-    config = {'host': None, 'user': None, 'password': None, 'database': None, \
-        'table_prefix': None}
+    def __init__(self, configFile=None):
+        if configFile is None:
+            configFile = ConfigReader.DEFAULT_CONFIG_FILE
 
-    def __init__(self, configFile='/etc/icinga2/features-enabled/ido-mysql.conf'):
+        self.config = {'host': None, 'user': None, 'password': None, \
+        'database': None, 'table_prefix': None}
+
         try:
             with open(configFile, 'r') as config:
                 for line in config:
@@ -34,9 +38,9 @@ class ConfigReader(object):
             raise ConfigReaderError(str(exception))
 
     def __matchLine(self, line):
-        for key in self.REGEX:
+        for key in ConfigReader.REGEX:
             if self.config[key] is None:
-                regex = self.REGEX[key]
+                regex = ConfigReader.REGEX[key]
                 match = regex.search(line)
                 if match:
                     self.config[key] = match.group(2)
