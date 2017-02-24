@@ -2,14 +2,20 @@
 This program provides the ability to limit the notifications sent by icinga2 per recipient.
 A limit is defined as the maxmimum number of notifications in a specified time interval (e.g. 100 notifications per hour).
 
-## INSTALLATION (example)
+## BUILD
 ### Requirements
 * pybuilder
-### Program
+### Build
 ```
 pyb
-cd target/dist/icinga2_notification_limit-<VERSION>/
-python setup.py
+```
+## INSTALLATION (example)
+### Program
+```
+cd  target/dist/icinga2_notification_limit-<VERSION>/dist
+tar -xzf icinga2_notification_limit-<VERSION>.tar.gz
+cd icinga2_notification_limit-<VERSION>
+python setup.py install
 ```
 ### Database
 ```

@@ -8,7 +8,7 @@ use_plugin("python.distutils")
 default_task = "publish"
 
 name = "icinga2_notification_limit"
-version = "0.0.1"
+version = "0.0.2"
 license = "MIT"
 description = "script for icinga2 notifications with limits configurable per sender"
 authors = [Author("Fabian Jucker", "jucker@gyselroth.com")]
