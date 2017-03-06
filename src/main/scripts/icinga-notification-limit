@@ -51,18 +51,18 @@ try:
         # Check if limit reached
         newValue = LimitChecker.Check(counter=row[2], maximum=row[3], \
             updated=row[0], timerange=row[1])
-        # Update counter
+        # Update counter if not
         if newValue:
+            # If limit reached just now: notify recipient about it
+            if newValue==row[3]:
+                EmailAlert(recipient, "Limit of " + str(row[3]) + " notifications per " + \
+                    str(row[1]) + "s reached")
             cur.execute('UPDATE ' + countersTable + ' SET counter = ?' + \
                 ', updated = CURRENT_TIMESTAMP' + \
                 ' WHERE recipient = ?', (newValue, recipient))
             exitCode = 0
         # Discard notification
         else:
-            # If limit reached just now: notify recipient about it
-            if row[2]==row[3]:
-                EmailAlert(recipient, "Limit of " + str(row[3]) + " notifications per " + \
-                    str(row[1]) + "s reached")
             print 'reached limit for recipient ' + recipient + '. not sending notification'
             exitCode = 1
     else:
