@@ -52,7 +52,7 @@ INSERT INTO icinga_notification_counters (recipient, limitId) VALUES ('jucker@gy
 ```
 
 ## USAGE
-The program itself does __not__ invoke any invocation.
+The program itself does __not__ invoke any notification.
 Instead, the program returns a value of 0, if the notification should be send and a value of 1 if the notification should not be send.
 Therefore the program can be used in any script.
 _Tip: Look at the shellscript examples for usage with the default mail-notification-scripts_ in examples folder.
